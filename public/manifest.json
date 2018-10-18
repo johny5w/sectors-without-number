@@ -1,10 +1,10 @@
 {
   "name": "Sectors Without Number",
   "short_name": "Sector Gen",
-  "start_url": "./index.html",
+  "start_url": ".",
   "display": "standalone",
-  "theme_color": "#303E4F",
-  "background_color": "#DBDBDB",
+  "theme_color": "#182742",
+  "background_color": "#b2b2b2",
   "icons": [
     {
       "src": "icons/android-icon-36x36.png",

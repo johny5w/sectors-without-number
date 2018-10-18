@@ -34,6 +34,8 @@ Firebase.initializeApp({
 // Temporary until deprecation notice goes away
 Firebase.firestore().settings({ timestampsInSnapshots: true });
 
+serviceWorker.register({});
+
 ReactDOM.render(
   <Provider store={store}>
     <ConnectedRouter history={history}>
@@ -52,5 +54,3 @@ ReactDOM.render(
   </Provider>,
   document.getElementById('root'),
 );
-
-serviceWorker.unregister();
