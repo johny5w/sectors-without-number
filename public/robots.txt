@@ -1,0 +1,5 @@
+User-agent: *
+disallow: /sector*
+disallow: /overview*
+disallow: /elements*
+allow: /
