@@ -38,7 +38,7 @@ export const CREATED_LAYER = `${ACTION_PREFIX}/CREATED_LAYER`;
 export const DELETED_LAYER = `${ACTION_PREFIX}/DELETED_LAYER`;
 
 export const initialize = location => dispatch =>
-  getCurrentUser().then(user => {
+  getCurrentUser().then(async user => {
     const { uid, locale } = user || {};
     const sectorId = location.pathname.split('/')[2];
     const isGameView =
@@ -59,45 +59,37 @@ export const initialize = location => dispatch =>
         }),
       );
     }
-    return Promise.all(promises)
-      .then(data => {
-        const { entities, share } = data[0];
-        if (!isGameView || share || !size(entities)) {
-          return Promise.resolve([{}, ...data]);
-        }
-        return getFactionData(sectorId).then(factions => [factions, ...data]);
-      })
-      .then(
-        ([
-          factions,
-          { entities, share },
-          routes,
-          layers,
-          sectors,
-          userLocale,
-        ]) => {
-          if (((entities || {})[Entities.sector.key] || {})[sectorId]) {
-            document.title = `Sector - ${
-              entities[Entities.sector.key][sectorId].name
-            }`;
-          }
-          dispatch({
-            type: INITIALIZED,
-            user,
-            entities: mergeEntityUpdates(
-              { [Entities.sector.key]: sectors },
-              entities || {},
-            ),
-            routes,
-            layers,
-            factions,
-            sectorId,
-            share,
-            saved: keys(sectors || {}),
-            locale: userLocale,
-          });
-        },
-      );
+    const data = await Promise.all(promises);
+    const [sectorEntities, routes, layers, sectors, userLocale] = data;
+    const isViewingCreatorsSector =
+      isGameView && !sectorEntities.share && size(sectorEntities.entities);
+    const { entities, share } = !isViewingCreatorsSector ? {} : sectorEntities;
+
+    let factions;
+    if (isViewingCreatorsSector) {
+      factions = await getFactionData(sectorId);
+    }
+    if (((entities || {})[Entities.sector.key] || {})[sectorId]) {
+      document.title = `Sector - ${
+        entities[Entities.sector.key][sectorId].name
+      }`;
+    }
+
+    dispatch({
+      type: INITIALIZED,
+      user,
+      entities: mergeEntityUpdates(
+        { [Entities.sector.key]: sectors },
+        entities || {},
+      ),
+      routes,
+      layers,
+      factions,
+      sectorId,
+      share,
+      saved: keys(sectors || {}),
+      locale: userLocale,
+    });
   });
 
 export const fetchSector = () => (dispatch, getState) => {
