@@ -2,9 +2,9 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { injectIntl, intlShape } from 'react-intl';
+import { ChevronDown, ChevronUp } from 'react-feather';
 
-import { isNil } from 'constants/lodash';
-import { ChevronDown, ChevronUp } from 'constants/icons';
+import { find, isNil } from 'constants/lodash';
 
 import './style.scss';
 
@@ -19,46 +19,20 @@ const nextDirection = direction => {
 };
 
 class Table extends Component {
-  static propTypes = {
-    className: PropTypes.string,
-    dataIdAccessor: PropTypes.string.isRequired,
-    data: PropTypes.arrayOf(
-      PropTypes.shape({
-        onClick: PropTypes.func,
-        rowClass: PropTypes.string,
-      }),
-    ).isRequired,
-    light: PropTypes.bool,
-    condensed: PropTypes.bool,
-    sortable: PropTypes.bool,
-    columns: PropTypes.arrayOf(
-      PropTypes.shape({
-        accessor: PropTypes.string.isRequired,
-        Header: PropTypes.oneOfType([PropTypes.func, PropTypes.string])
-          .isRequired,
-        Cell: PropTypes.func,
-        columnClass: PropTypes.string,
-        centered: PropTypes.bool,
-        translateItems: PropTypes.bool,
-      }),
-    ).isRequired,
-    intl: intlShape.isRequired,
-  };
+  constructor(props) {
+    super(props);
 
-  static defaultProps = {
-    light: false,
-    condensed: false,
-    sortable: false,
-    className: undefined,
-  };
+    this.state = {
+      sort: undefined,
+      sortDirection: 0,
+    };
+  }
 
-  state = {
-    sort: undefined,
-    sortDirection: 0,
-  };
-
-  static getDerivedStateFromProps() {
-    return { sort: undefined, sortDirection: 0 };
+  static getDerivedStateFromProps({ columns }, state) {
+    if (state.sort && !find(columns, { accessor: state.sort })) {
+      return { sort: undefined, sortDirection: 0 };
+    }
+    return state;
   }
 
   onHeaderClick = (accessor, onClick) => () => {
@@ -109,11 +83,14 @@ class Table extends Component {
     return <ChevronDown size={12} className="Table-SortIcon" />;
   }
 
-  renderRowItem(row, { Cell, accessor, translateItem }) {
-    let item = row[accessor];
+  renderRowItem(row, { Cell, accessor }) {
     const { intl } = this.props;
-    if (item && translateItem && intl.messages[row[accessor]]) {
-      item = intl.formatMessage({ id: row[accessor] });
+    let item = row[accessor];
+    if (intl.messages[row[accessor]]) {
+      item = intl.formatMessage({
+        id: row[accessor],
+        defaultMessage: row[accessor],
+      });
     }
     item = isNil(item) ? '-' : item;
     return Cell ? Cell(item, row) : item;
@@ -186,5 +163,37 @@ class Table extends Component {
     );
   }
 }
+
+Table.propTypes = {
+  className: PropTypes.string,
+  dataIdAccessor: PropTypes.string.isRequired,
+  data: PropTypes.arrayOf(
+    PropTypes.shape({
+      onClick: PropTypes.func,
+      rowClass: PropTypes.string,
+    }),
+  ).isRequired,
+  light: PropTypes.bool,
+  condensed: PropTypes.bool,
+  sortable: PropTypes.bool,
+  columns: PropTypes.arrayOf(
+    PropTypes.shape({
+      accessor: PropTypes.string.isRequired,
+      Header: PropTypes.oneOfType([PropTypes.func, PropTypes.string])
+        .isRequired,
+      Cell: PropTypes.func,
+      columnClass: PropTypes.string,
+      centered: PropTypes.bool,
+    }),
+  ).isRequired,
+  intl: intlShape.isRequired,
+};
+
+Table.defaultProps = {
+  light: false,
+  condensed: false,
+  sortable: false,
+  className: undefined,
+};
 
 export default injectIntl(Table);

@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { intlShape, FormattedMessage } from 'react-intl';
 
@@ -14,27 +14,38 @@ import Entities from 'constants/entities';
 import './style.scss';
 import '../style.scss';
 
-export default class CondensedPrintable extends Component {
-  static propTypes = {
-    entities: PropTypes.shape().isRequired,
-    printable: PropTypes.shape({
-      hexes: PropTypes.arrayOf(PropTypes.object).isRequired,
-      viewbox: PropTypes.string.isRequired,
-    }).isRequired,
-    intl: intlShape.isRequired,
-    endPrint: PropTypes.func.isRequired,
-  };
-
-  componentDidMount() {
-    const { endPrint } = this.props;
+export default function CondensedPrintable({
+  endPrint,
+  entities,
+  printable,
+  intl,
+  customTags,
+}) {
+  useEffect(() => {
     setTimeout(() => {
       window.print();
       endPrint();
     }, 1);
-  }
+  }, [endPrint]);
 
-  getColumnsFromType = entityType => {
-    const common = [{ accessor: 'name', Header: 'misc.name' }];
+  const getColumnsFromType = entityType => {
+    const common = [
+      { accessor: 'name', Header: 'misc.name' },
+      {
+        accessor: 'tags',
+        Header: 'misc.tags',
+        Cell: tags =>
+          tags
+            .map(tag =>
+              intl.formatMessage({
+                id: `tags.${tag}`,
+                defaultMessage: (customTags[tag] || {}).name,
+              }),
+            )
+            .filter(tag => tag)
+            .join(', ') || '-',
+      },
+    ];
     if (Entities[entityType].topLevel) {
       return [
         ...common,
@@ -64,24 +75,13 @@ export default class CondensedPrintable extends Component {
     }
     if ((Entities[entityType].attributes || []).length) {
       Entities[entityType].attributes.forEach(({ key, name }) => {
-        columns.push({ accessor: key, Header: name, translateItem: true });
-      });
-    }
-    if (Entities[entityType].tags) {
-      const { intl } = this.props;
-      columns.push({
-        accessor: 'tags',
-        Header: 'misc.tags',
-        Cell: tags =>
-          tags
-            .map(tag => intl.formatMessage({ id: `tags.${tag}` }))
-            .join(', ') || '-',
+        columns.push({ accessor: key, Header: name });
       });
     }
     return columns;
   };
 
-  renderEntityType = (
+  const renderEntityType = (
     { entityType, ...entities }, // eslint-disable-line
   ) => (
     <FlexContainer
@@ -102,28 +102,34 @@ export default class CondensedPrintable extends Component {
         condensed
         className="CondensedPrintable-Table"
         dataIdAccessor="key"
-        columns={this.getColumnsFromType(entityType)}
+        columns={getColumnsFromType(entityType)}
         data={values(entities).sort(sortByKey('name'))}
       />
     </FlexContainer>
   );
 
-  renderEntities = entities =>
+  const renderEntities = () =>
     map(entities, (entity, entityType) => ({ ...entity, entityType }))
       .sort(sortByKey('entityType'))
-      .map(this.renderEntityType);
+      .map(renderEntityType);
 
-  render() {
-    const { printable, entities } = this.props;
-    return (
-      <div className="Printable">
-        <div className="Printable-Container">
-          <MapPrintable hexes={printable.hexes} viewbox={printable.viewbox} />
-        </div>
-        <div className="Printable-EntityContainer">
-          {this.renderEntities(entities)}
-        </div>
+  return (
+    <div className="Printable">
+      <div className="Printable-Container">
+        <MapPrintable hexes={printable.hexes} viewbox={printable.viewbox} />
       </div>
-    );
-  }
+      <div className="Printable-EntityContainer">{renderEntities()}</div>
+    </div>
+  );
 }
+
+CondensedPrintable.propTypes = {
+  entities: PropTypes.shape().isRequired,
+  printable: PropTypes.shape({
+    hexes: PropTypes.arrayOf(PropTypes.object).isRequired,
+    viewbox: PropTypes.string.isRequired,
+  }).isRequired,
+  intl: intlShape.isRequired,
+  endPrint: PropTypes.func.isRequired,
+  customTags: PropTypes.shape().isRequired,
+};

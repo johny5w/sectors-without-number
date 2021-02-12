@@ -1,10 +1,12 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import Chance from 'chance';
+import PropTypes from 'prop-types';
+import { Zap, RefreshCw } from 'react-feather';
 import { intlShape, FormattedMessage } from 'react-intl';
 
 import StarBackground from 'components/star-background';
 import Header, { HeaderType } from 'primitives/text/header';
+import FlexContainer from 'primitives/container/flex-container';
 import ContentContainer from 'primitives/container/content-container';
 import SubContainer from 'primitives/container/sub-container';
 import Checkbox from 'primitives/form/checkbox';
@@ -14,8 +16,6 @@ import ItemRow from 'primitives/other/item-row';
 import LabeledInput from 'primitives/form/labeled-input';
 
 import { MIN_DIMENSION, MAX_DIMENSION } from 'constants/defaults';
-import { Zap, RefreshCw } from 'constants/icons';
-import { clamp } from 'constants/lodash';
 import { generateSectorName } from 'utils/name-generator';
 
 import './style.scss';
@@ -23,21 +23,18 @@ import './style.scss';
 export default function Configure({
   additionalPointsOfInterest,
   updateConfiguration,
+  openCustomTagModal,
   generateSector,
   hideOccAndSit,
+  useCustomTags,
+  isLoggedIn,
+  sectorName,
   isBuilder,
   hideTags,
   columns,
   rows,
-  name,
   intl,
 }) {
-  const limitDimensions = func => e => {
-    const num = Number.parseInt(e.target.value, 10);
-    e.target.value = clamp(num, MIN_DIMENSION, MAX_DIMENSION);
-    func(e);
-  };
-
   const updateInput = ({ target }) => {
     const key = target.getAttribute('data-key');
     let { value } = target;
@@ -51,8 +48,17 @@ export default function Configure({
 
   const regenerateName = genFunc => () => {
     const chance = new Chance();
-    updateConfiguration('name', genFunc(chance));
+    updateConfiguration('sectorName', genFunc(chance));
   };
+
+  const isValid = () =>
+    !!sectorName &&
+    !!rows &&
+    !!columns &&
+    rows <= MAX_DIMENSION &&
+    rows >= MIN_DIMENSION &&
+    columns <= MAX_DIMENSION &&
+    columns >= MIN_DIMENSION;
 
   return (
     <StarBackground>
@@ -65,9 +71,9 @@ export default function Configure({
             isVertical
             label="misc.sectorName"
             name="name"
-            data-key="name"
+            data-key="sectorName"
             icon={RefreshCw}
-            value={name}
+            value={sectorName}
             onChange={updateInput}
             onIconClick={regenerateName(generateSectorName)}
           />
@@ -76,7 +82,7 @@ export default function Configure({
               isVertical
               label="misc.rows"
               data-key="rows"
-              onChange={limitDimensions(updateInput)}
+              onChange={updateInput}
               name="rows"
               type="number"
               value={rows || ''}
@@ -85,12 +91,39 @@ export default function Configure({
               isVertical
               label="misc.columns"
               data-key="columns"
-              onChange={limitDimensions(updateInput)}
+              onChange={updateInput}
               name="columns"
               type="number"
               value={columns || ''}
             />
           </ItemRow>
+          <p className="Configure-Info">
+            <FormattedMessage
+              id="misc.dimensionBounds"
+              values={{ minNumber: MIN_DIMENSION, maxNumber: MAX_DIMENSION }}
+            />
+          </p>
+          {isLoggedIn && (
+            <FlexContainer
+              align="flexEnd"
+              justify="spaceBetween"
+              className="Configure-ManageContainer"
+            >
+              <Checkbox
+                data-key="useCustomTags"
+                value={useCustomTags}
+                onChange={updateInput}
+                label={intl.formatMessage({ id: 'misc.useCustomTags' })}
+              />
+              <Button
+                minimal
+                className="Configure-ManageLink"
+                onClick={openCustomTagModal}
+              >
+                (<FormattedMessage id="misc.manage" />)
+              </Button>
+            </FlexContainer>
+          )}
           <Checkbox
             data-key="isBuilder"
             value={isBuilder}
@@ -122,7 +155,7 @@ export default function Configure({
           justify="center"
           align="center"
         >
-          <Button onClick={generateSector}>
+          <Button disabled={!isValid()} onClick={generateSector}>
             <LinkIcon icon={Zap} size="20" />
             <FormattedMessage id="misc.generate" />
           </Button>
@@ -135,18 +168,21 @@ export default function Configure({
 Configure.propTypes = {
   additionalPointsOfInterest: PropTypes.bool.isRequired,
   updateConfiguration: PropTypes.func.isRequired,
+  openCustomTagModal: PropTypes.func.isRequired,
   generateSector: PropTypes.func.isRequired,
   isBuilder: PropTypes.bool.isRequired,
   hideTags: PropTypes.bool.isRequired,
   hideOccAndSit: PropTypes.bool.isRequired,
+  useCustomTags: PropTypes.bool.isRequired,
+  isLoggedIn: PropTypes.bool.isRequired,
+  sectorName: PropTypes.string,
   columns: PropTypes.number,
   rows: PropTypes.number,
-  name: PropTypes.string,
   intl: intlShape.isRequired,
 };
 
 Configure.defaultProps = {
   columns: undefined,
   rows: undefined,
-  name: '',
+  sectorName: '',
 };

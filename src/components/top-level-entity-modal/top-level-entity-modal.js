@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import ReactHintFactory from 'react-hint';
+import { RefreshCw, X, Plus } from 'react-feather';
 import { FormattedMessage, intlShape } from 'react-intl';
 
 import Modal from 'primitives/modal/modal';
@@ -13,7 +14,6 @@ import FlexContainer from 'primitives/container/flex-container';
 import Dice from 'primitives/icons/dice';
 import Header, { HeaderType } from 'primitives/text/header';
 
-import { RefreshCw, X, Plus } from 'constants/icons';
 import Entities from 'constants/entities';
 import { createId, coordinatesFromKey } from 'utils/common';
 import EntityGenerators from 'utils/entity-generators';
@@ -32,15 +32,15 @@ import {
 import './style.scss';
 
 const ReactHint = ReactHintFactory(React);
-const TopLevelLeveEntities = filter(Entities, entity => entity.topLevel);
-const generateChildrenNames = (parentEntity, currentSector) => {
+const TopLevelLevelEntities = filter(Entities, entity => entity.topLevel);
+const generateChildrenNames = (parentEntity, currentSector, customTags) => {
   let names = {};
   let currentSort = 0;
   Entities[parentEntity].children.forEach(child => {
     const { children } = EntityGenerators[child].generateAll({
-      additionalPointsOfInterest: true,
       sector: currentSector,
       parentEntity,
+      customTags,
       parent: createId(),
     });
     names = {
@@ -62,28 +62,15 @@ const generateChildrenNames = (parentEntity, currentSector) => {
 };
 
 export default class TopLevelEntityModal extends Component {
-  static propTypes = {
-    isOpen: PropTypes.bool.isRequired,
-    topLevelKey: PropTypes.string,
-    currentSector: PropTypes.string.isRequired,
-    cancelTopLevelEntityCreate: PropTypes.func.isRequired,
-    generateEntity: PropTypes.func.isRequired,
-    intl: intlShape.isRequired,
-  };
-
-  static defaultProps = {
-    topLevelKey: '',
-  };
-
   constructor(props) {
     super(props);
 
-    const { isOpen, currentSector } = props;
+    const { isOpen, currentSector, customTags } = props;
     this.state = {
       isOpen, // eslint-disable-line
       currentSort: 0,
       name: Entities.system.nameGenerator(),
-      ...generateChildrenNames(Entities.system.key, currentSector),
+      ...generateChildrenNames(Entities.system.key, currentSector, customTags),
       entityType: Entities.system.key,
     };
   }
@@ -93,7 +80,11 @@ export default class TopLevelEntityModal extends Component {
       return {
         isOpen: props.isOpen,
         name: Entities[state.entityType].nameGenerator(),
-        ...generateChildrenNames(state.entityType, props.currentSector),
+        ...generateChildrenNames(
+          state.entityType,
+          props.currentSector,
+          props.customTags,
+        ),
       };
     }
     return { ...state, isOpen: props.isOpen };
@@ -324,6 +315,7 @@ export default class TopLevelEntityModal extends Component {
       cancelTopLevelEntityCreate,
       intl,
       currentSector,
+      customTags,
     } = this.props;
     const { entityType, name } = this.state;
     return (
@@ -354,10 +346,10 @@ export default class TopLevelEntityModal extends Component {
                 const newType = (item || {}).value;
                 this.setState({
                   entityType: newType,
-                  ...generateChildrenNames(newType, currentSector),
+                  ...generateChildrenNames(newType, currentSector, customTags),
                 });
               }}
-              options={TopLevelLeveEntities.map(attr => ({
+              options={TopLevelLevelEntities.map(attr => ({
                 value: attr.key,
                 label: intl.formatMessage({ id: attr.name }),
               }))}
@@ -393,3 +385,17 @@ export default class TopLevelEntityModal extends Component {
     );
   }
 }
+
+TopLevelEntityModal.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  topLevelKey: PropTypes.string,
+  currentSector: PropTypes.string.isRequired,
+  cancelTopLevelEntityCreate: PropTypes.func.isRequired,
+  generateEntity: PropTypes.func.isRequired,
+  customTags: PropTypes.shape().isRequired,
+  intl: intlShape.isRequired,
+};
+
+TopLevelEntityModal.defaultProps = {
+  topLevelKey: '',
+};

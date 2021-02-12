@@ -18,16 +18,16 @@ export const getSyncedSectors = uid =>
     .then(typeSnapshot => {
       let sectors = {};
       typeSnapshot.forEach(doc => {
-        sectors = {
-          ...sectors,
-          [doc.id]: doc.data(),
-        };
+        const data = doc.data();
+        if (!data.deleted) {
+          sectors = { ...sectors, [doc.id]: data };
+        }
       });
       return sectors;
     });
 
 export const getSectorEntities = (sectorId, uid) => {
-  let entities = {};
+  let entities;
   return Firebase.firestore()
     .collection('entities')
     .doc(Entities.sector.key)
@@ -35,12 +35,12 @@ export const getSectorEntities = (sectorId, uid) => {
     .doc(sectorId)
     .get()
     .then(doc => {
-      if (!doc.exists) {
+      const data = doc.exists ? doc.data() : undefined;
+      if (!data || data.deleted) {
         return { entities };
       }
-      const data = doc.data();
-      entities[Entities.sector.key] = {
-        [doc.id]: data,
+      entities = {
+        [Entities.sector.key]: { [doc.id]: data },
       };
       return Promise.all(
         map(omit(Entities, Entities.sector.key), ({ key }) =>
@@ -97,6 +97,18 @@ export const updateEntities = entities => {
   return batch.commit();
 };
 
+export const deleteSector = sectorId =>
+  Firebase.firestore()
+    .collection('entities')
+    .doc(Entities.sector.key)
+    .collection('entity')
+    .doc(sectorId)
+    .set(
+      { deleted: Firebase.firestore.FieldValue.serverTimestamp() },
+      { merge: true },
+    );
+
+const BATCH_SIZE = 250;
 export const deleteEntities = entities => {
   const batches = [Firebase.firestore().batch()];
   let batchCount = 0;
@@ -112,7 +124,7 @@ export const deleteEntities = entities => {
           .doc(entityId),
       );
       batchCount += 1;
-      if (batchCount === 500) {
+      if (batchCount === BATCH_SIZE) {
         batches.push(Firebase.firestore().batch());
         batchIndex += 1;
         batchCount = 0;

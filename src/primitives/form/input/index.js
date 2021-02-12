@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 
+import ColorPicker from 'primitives/form/color-picker';
 import Dropdown from 'primitives/form/dropdown';
 
 import './style.scss';
@@ -24,8 +25,15 @@ export default function Input({ className, width, error, type, ...rest }) {
   }
   if (type === 'dropdown') {
     return (
-      <Dropdown wrapperClassName="Input-Dropdown" style={style} {...rest} />
+      <Dropdown
+        wrapperClassName={classNames('Input-Dropdown', className)}
+        style={style}
+        {...rest}
+      />
     );
+  }
+  if (type === 'color') {
+    return <ColorPicker className={className} {...rest} />;
   }
   return (
     <input

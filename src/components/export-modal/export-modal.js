@@ -1,4 +1,5 @@
 import React from 'react';
+import dayjs from 'dayjs';
 import PropTypes from 'prop-types';
 import { FormattedMessage, intlShape } from 'react-intl';
 
@@ -7,7 +8,7 @@ import Modal from 'primitives/modal/modal';
 import Button from 'primitives/other/button';
 import ExportTypes from 'constants/export-types';
 import { createJSONDownload, createImageDownlaod } from 'utils/export';
-import { mapValues, omit } from 'constants/lodash';
+import { translateEntities } from 'utils/entity';
 
 import './style.scss';
 
@@ -17,6 +18,7 @@ export default function ExportModal({
   closeExport,
   startPrint,
   setEntityExport,
+  customTags,
   intl,
   entities,
   sector,
@@ -25,10 +27,8 @@ export default function ExportModal({
     if (exportType === ExportTypes.json.key) {
       closeExport();
       return createJSONDownload(
-        mapValues(entities, entityTypes =>
-          mapValues(entityTypes, entity => omit(entity, 'sector')),
-        ),
-        sector.name,
+        translateEntities(entities, customTags, intl),
+        `${sector.name} - ${dayjs().format('MMMM D, YYYY')}`,
       );
     }
     if (exportType === ExportTypes.image.key) {
@@ -86,6 +86,7 @@ export default function ExportModal({
 }
 
 ExportModal.propTypes = {
+  customTags: PropTypes.shape().isRequired,
   isExportOpen: PropTypes.bool.isRequired,
   exportType: PropTypes.string.isRequired,
   closeExport: PropTypes.func.isRequired,

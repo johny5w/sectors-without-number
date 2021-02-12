@@ -14,6 +14,7 @@ import {
   sectorSelector,
   syncLockSelector,
   isSharedSectorSelector,
+  customTagSelector,
 } from 'store/selectors/base.selectors';
 import {
   getCurrentTopLevelEntities,
@@ -22,7 +23,6 @@ import {
   getCurrentEntity,
   getCurrentSector,
 } from 'store/selectors/entity.selectors';
-import { currentSectorLayers } from 'store/selectors/layer.selectors';
 import { isCurrentSectorSaved } from 'store/selectors/sector.selectors';
 
 import {
@@ -97,6 +97,7 @@ export const generateEntity = (entity, parameters, intl) => (
     entity,
     currentSector: currentSectorSelector(state),
     configuration: configurationSelector(state),
+    customTags: customTagSelector(state),
     parameters,
   });
   dispatch({
@@ -286,7 +287,10 @@ export const saveEntityEdit = intl => (dispatch, getState) => {
   allEntities = merge(
     allEntities,
     mapValues(deletedEntities, deletedIds =>
-      zipObject(deletedIds, deletedIds.map(() => null)),
+      zipObject(
+        deletedIds,
+        deletedIds.map(() => null),
+      ),
     ),
   );
 
@@ -347,13 +351,8 @@ export const toggleLayer = layerId => (dispatch, getState) => {
     return Promise.resolve();
   }
 
-  const customLayers = currentSectorLayers(state);
-  let layers = sector.layers || {};
+  const layers = sector.layers || {};
   const layerToggle = layers[layerId] !== undefined && !layers[layerId];
-  layers =
-    customLayers[layerId] && layerToggle
-      ? { ...layers, ...mapValues(customLayers, () => false) }
-      : layers;
 
   const sectorUpdate = {
     layers: {

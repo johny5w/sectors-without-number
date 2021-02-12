@@ -3,23 +3,25 @@ import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import Measure from 'react-measure';
 import { FormattedMessage, intlShape } from 'react-intl';
-
-import FactionNotSaved from 'components/faction-table/faction-not-saved';
-import CollapsibleTable from 'primitives/other/collapsible-table';
-import FlexContainer from 'primitives/container/flex-container';
-import Header, { HeaderType } from 'primitives/text/header';
-import ButtonLink from 'primitives/other/button-link';
-import BasicLink from 'primitives/other/basic-link';
-import Loading from 'primitives/regions/loading';
-
 import {
   RotateCcw,
   Minus,
   ChevronUp,
   ChevronDown,
   EyeOff,
-} from 'constants/icons';
+} from 'react-feather';
+
+import FactionNotSaved from 'components/faction-table/faction-not-saved';
+import CollapsibleTable from 'primitives/other/collapsible-table';
+import FlexContainer from 'primitives/container/flex-container';
+import Header, { HeaderType } from 'primitives/text/header';
+import ColorSwatch from 'primitives/other/color-swatch';
+import ButtonLink from 'primitives/other/button-link';
+import BasicLink from 'primitives/other/basic-link';
+import Loading from 'primitives/regions/loading';
+
 import { isArray } from 'constants/lodash';
+import { factionColor } from 'utils/faction';
 
 import './style.scss';
 
@@ -33,16 +35,23 @@ const buildFactionTableColumns = ({ intl, windowWidth, sector }) => {
     {
       accessor: 'name',
       Header: 'misc.name',
-      Cell: (name, { key, relationship, stealthed }) => {
+      Cell: (name, { key, relationship, stealthed, color }) => {
         const id = `faction.assets.${name}`;
         let title;
         if (intl.messages[id]) {
           title = intl.formatMessage({ id });
         } else {
           title = (
-            <BasicLink to={`/elements/${sector}/faction/${key}`}>
-              {name}
-            </BasicLink>
+            <>
+              <ColorSwatch
+                color={factionColor(color, key)}
+                className="FactionTable-Color"
+                size={16}
+              />
+              <BasicLink to={`/elements/${sector}/faction/${key}`}>
+                {name}
+              </BasicLink>
+            </>
           );
         }
         let icon;
@@ -117,7 +126,7 @@ const buildFactionTableColumns = ({ intl, windowWidth, sector }) => {
     },
     {
       accessor: 'homeworld',
-      Header: 'misc.homeworld',
+      Header: 'misc.location',
       Cell: loc =>
         loc.link ? <BasicLink to={loc.link}>{loc.name}</BasicLink> : '-',
       centered: true,
@@ -165,27 +174,6 @@ const buildFactionTableColumns = ({ intl, windowWidth, sector }) => {
 };
 
 export default class FactionTable extends Component {
-  static propTypes = {
-    intl: intlShape.isRequired,
-    isLoggedIn: PropTypes.bool.isRequired,
-    isLoading: PropTypes.bool.isRequired,
-    isSaved: PropTypes.bool.isRequired,
-    isShared: PropTypes.bool.isRequired,
-    isInitialized: PropTypes.bool.isRequired,
-    doesNotExist: PropTypes.bool.isRequired,
-    table: PropTypes.arrayOf(PropTypes.shape()).isRequired,
-    children: PropTypes.node.isRequired,
-    currentSector: PropTypes.string.isRequired,
-    currentFaction: PropTypes.shape({}),
-    currentElement: PropTypes.string,
-    toSafeRoute: PropTypes.func.isRequired,
-  };
-
-  static defaultProps = {
-    currentFaction: undefined,
-    currentElement: undefined,
-  };
-
   componentDidUpdate(prevProps) {
     const { isInitialized, doesNotExist, isShared, toSafeRoute } = this.props;
     if (
@@ -281,3 +269,24 @@ export default class FactionTable extends Component {
     );
   }
 }
+
+FactionTable.propTypes = {
+  intl: intlShape.isRequired,
+  isLoggedIn: PropTypes.bool.isRequired,
+  isLoading: PropTypes.bool.isRequired,
+  isSaved: PropTypes.bool.isRequired,
+  isShared: PropTypes.bool.isRequired,
+  isInitialized: PropTypes.bool.isRequired,
+  doesNotExist: PropTypes.bool.isRequired,
+  table: PropTypes.arrayOf(PropTypes.shape()).isRequired,
+  children: PropTypes.node.isRequired,
+  currentSector: PropTypes.string.isRequired,
+  currentFaction: PropTypes.shape({}),
+  currentElement: PropTypes.string,
+  toSafeRoute: PropTypes.func.isRequired,
+};
+
+FactionTable.defaultProps = {
+  currentFaction: undefined,
+  currentElement: undefined,
+};

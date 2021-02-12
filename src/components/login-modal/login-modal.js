@@ -2,13 +2,13 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import ReactModal from 'react-modal';
 import classNames from 'classnames';
+import { X } from 'react-feather';
 import { FormattedMessage, intlShape } from 'react-intl';
 
 import Button from 'primitives/other/button';
 import FlexContainer from 'primitives/container/flex-container';
 import Label from 'primitives/form/label';
 import Input from 'primitives/form/input';
-import { X } from 'constants/icons';
 
 import './style.scss';
 
@@ -18,30 +18,14 @@ const LOGIN_PAGE_TYPES = {
   forget: 'forget',
 };
 
-export default class ConfirmModal extends Component {
-  static propTypes = {
-    isLoginModalOpen: PropTypes.bool.isRequired,
-    closeLoginModal: PropTypes.func.isRequired,
-    updateUserForm: PropTypes.func.isRequired,
-    facebookLogin: PropTypes.func.isRequired,
-    googleLogin: PropTypes.func.isRequired,
-    signup: PropTypes.func.isRequired,
-    login: PropTypes.func.isRequired,
-    passwordReset: PropTypes.func.isRequired,
-    email: PropTypes.string.isRequired,
-    password: PropTypes.string.isRequired,
-    confirm: PropTypes.string.isRequired,
-    error: PropTypes.string,
-    intl: intlShape.isRequired,
-  };
+export default class LoginModal extends Component {
+  constructor(props) {
+    super(props);
 
-  static defaultProps = {
-    error: null,
-  };
-
-  state = {
-    page: LOGIN_PAGE_TYPES.login,
-  };
+    this.state = {
+      page: LOGIN_PAGE_TYPES.login,
+    };
+  }
 
   onConfirm = () => {
     const { page } = this.state;
@@ -142,7 +126,6 @@ export default class ConfirmModal extends Component {
     const {
       isLoginModalOpen,
       closeLoginModal,
-      facebookLogin,
       googleLogin,
       intl,
       email,
@@ -165,9 +148,6 @@ export default class ConfirmModal extends Component {
       >
         <X className="LoginModal-Close" onClick={closeLoginModal} size={30} />
         <FlexContainer justify="center" align="center" direction="column">
-          <Button className="LoginModal-Facebook" onClick={facebookLogin}>
-            <FormattedMessage id="misc.facebook" />
-          </Button>
           <Button className="LoginModal-Google" onClick={googleLogin}>
             <FormattedMessage id="misc.google" />
           </Button>
@@ -235,3 +215,22 @@ export default class ConfirmModal extends Component {
     );
   }
 }
+
+LoginModal.propTypes = {
+  isLoginModalOpen: PropTypes.bool.isRequired,
+  closeLoginModal: PropTypes.func.isRequired,
+  updateUserForm: PropTypes.func.isRequired,
+  googleLogin: PropTypes.func.isRequired,
+  signup: PropTypes.func.isRequired,
+  login: PropTypes.func.isRequired,
+  passwordReset: PropTypes.func.isRequired,
+  email: PropTypes.string.isRequired,
+  password: PropTypes.string.isRequired,
+  confirm: PropTypes.string.isRequired,
+  error: PropTypes.string,
+  intl: intlShape.isRequired,
+};
+
+LoginModal.defaultProps = {
+  error: null,
+};

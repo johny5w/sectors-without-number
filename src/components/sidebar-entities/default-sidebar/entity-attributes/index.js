@@ -11,7 +11,6 @@ import {
 } from 'store/selectors/entity.selectors';
 import { isSidebarEditActiveSelector } from 'store/selectors/base.selectors';
 import { updateEntityInEdit } from 'store/actions/sidebar.actions';
-import { isViewingSharedSector } from 'store/selectors/sector.selectors';
 
 import EntityAttributes from './entity-attributes';
 
@@ -22,12 +21,8 @@ const mapStateToProps = createStructuredSelector({
   entityAttributes: getEntityAttributes,
   isSidebarEditActive: isSidebarEditActiveSelector,
   isAncestorHidden,
-  isShared: isViewingSharedSector,
 });
 
 export default injectIntl(
-  connect(
-    mapStateToProps,
-    { updateEntityInEdit },
-  )(EntityAttributes),
+  connect(mapStateToProps, { updateEntityInEdit })(EntityAttributes),
 );

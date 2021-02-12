@@ -1,13 +1,12 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
+import { RotateCcw } from 'react-feather';
 import { FormattedMessage } from 'react-intl';
 
 import FlexContainer from 'primitives/container/flex-container';
 import Header, { HeaderType } from 'primitives/text/header';
 import LabeledItem from 'primitives/other/labeled-item';
 import ButtonLink from 'primitives/other/button-link';
-
-import { RotateCcw } from 'constants/icons';
 
 import './style.scss';
 
@@ -45,7 +44,7 @@ export default function FactionAssets({ assets, className }) {
       attackRow = (
         <span>
           <FormattedMessage id={`faction.category.${attack.attack}`} />
-          {' v '}
+          <span className="FactionAssets-Spacer">v</span>
           <FormattedMessage id={`faction.category.${attack.defense}`} />
           {', '}
           {renderRoll(attack.damage)}
@@ -96,7 +95,7 @@ export default function FactionAssets({ assets, className }) {
           <span className="FactionAssets-Header">
             <FormattedMessage id={`faction.assets.${key}`} />
           </span>
-          (<FormattedMessage id={`faction.category.${category}`} /> {rating} -{' '}
+          (<FormattedMessage id={`faction.category.${category}`} /> {rating} -
           <FormattedMessage id={`faction.type.${type}`} />)
         </Header>
         <p className="FactionAssets-Description">

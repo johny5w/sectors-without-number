@@ -1,14 +1,16 @@
 import { connect } from 'react-redux';
-import { createStructuredSelector } from 'reselect';
 import { injectIntl } from 'react-intl';
+import { push } from 'connected-react-router';
+import { createStructuredSelector } from 'reselect';
 
 import {
+  currentSectorSelector,
   currentEntitySelector,
   layerIsEditingSelector,
   layerRegionFormSelector,
   layerColorPickerSelector,
 } from 'store/selectors/base.selectors';
-import { visibleLayer } from 'store/selectors/layer.selectors';
+import { currentLayer } from 'store/selectors/layer.selectors';
 import { isViewingSharedSector } from 'store/selectors/sector.selectors';
 import {
   initializeRegionForm,
@@ -19,23 +21,22 @@ import {
 import LayerSidebar from './layer-sidebar';
 
 const mapStateToProps = createStructuredSelector({
-  layer: visibleLayer,
-  layerId: currentEntitySelector,
-  isEditing: layerIsEditingSelector,
-  regionForm: layerRegionFormSelector,
   colorPicker: layerColorPickerSelector,
+  regionForm: layerRegionFormSelector,
+  isEditing: layerIsEditingSelector,
   isShared: isViewingSharedSector,
+  sectorId: currentSectorSelector,
+  layerId: currentEntitySelector,
+  currentLayer,
 });
 
 const mapDispatchToProps = (dispatch, props) => ({
   initializeRegionForm: regionId => dispatch(initializeRegionForm(regionId)),
   updateRegion: (regionId, update) => dispatch(updateRegion(regionId, update)),
   removeRegion: regionId => dispatch(removeRegion(regionId, props.intl)),
+  toSafeRoute: sectorId => dispatch(push(`/sector/${sectorId}`)),
 });
 
 export default injectIntl(
-  connect(
-    mapStateToProps,
-    mapDispatchToProps,
-  )(LayerSidebar),
+  connect(mapStateToProps, mapDispatchToProps)(LayerSidebar),
 );

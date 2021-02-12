@@ -68,3 +68,14 @@ export const layerRegionPaintSelector = state => state.layer.regionPaint;
 export const factionsSelector = state => state.faction.models;
 export const factionFormSelector = state => state.faction.form;
 export const factionIsCreatingSelector = state => state.faction.isCreating;
+
+/* Settings */
+export const settingsSelector = state => state.settings;
+export const settingsShowNumberOfChildren = state =>
+  state.settings.showNumberOfChildren;
+export const settingsShowEntityName = state => state.settings.showEntityName;
+export const settingsShowCoordinates = state => state.settings.showCoordinates;
+
+/* Tag */
+export const customTagSelector = state => state.tag.models;
+export const isCustomTagModalOpenSelector = state => state.tag.isOpen;

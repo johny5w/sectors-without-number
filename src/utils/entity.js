@@ -10,6 +10,7 @@ import {
   isObject,
   findKey,
   find,
+  reduce,
 } from 'constants/lodash';
 import {
   syncLockSelector,
@@ -20,12 +21,14 @@ import {
 } from 'store/selectors/base.selectors';
 import {
   getCurrentEntities,
+  getCurrentEntityId,
   getCurrentEntityType,
 } from 'store/selectors/entity.selectors';
 import { isCurrentSectorSaved } from 'store/selectors/sector.selectors';
 
 import {
   uploadEntities,
+  deleteSector,
   deleteEntities as syncDeleteEntities,
   updateEntities as syncUpdateEntities,
 } from 'store/api/entity';
@@ -108,6 +111,7 @@ export const generateEntity = ({
   entity,
   currentSector,
   configuration,
+  customTags = {},
   parameters = {},
 }) => {
   const { entityType, name } = entity;
@@ -141,10 +145,14 @@ export const generateEntity = ({
           parentEntity,
           children: isFirstLevel ? entityChildren : undefined,
           coordinates: filteredCoordinates,
+          customTags,
           ...config,
         });
         filteredCoordinates = coordinates || filteredCoordinates;
-        const childrenObj = zipObject(children.map(() => createId()), children);
+        const childrenObj = zipObject(
+          children.map(() => createId()),
+          children,
+        );
         childrenEntities = {
           ...childrenEntities,
           [childEntity]: {
@@ -178,7 +186,7 @@ export const generateEntity = ({
       [entityId]: EntityGenerators[entityType].generateOne({
         sector,
         ...configuration,
-        name: name || configuration.name,
+        name: name || configuration.sectorName,
         ...parameters,
       }),
     },
@@ -254,29 +262,23 @@ export const mergeEntityUpdates = (state, updates) => ({
   ),
 });
 
-export const getTopLevelEntity = (topLevelEntities, key) => {
-  const entityId = findKey(
-    topLevelEntities,
-    ({ x, y }) => coordinateKey(x, y) === key,
-  );
-  const entity = topLevelEntities[entityId];
-  return { entity, entityId, entityType: (entity || {}).type };
-};
-
 export const deleteEntities = ({ state, deleted }, intl) => {
   const isLoggedIn = isLoggedInSelector(state);
   const isSaved = isCurrentSectorSaved(state);
   const currentEntityType = getCurrentEntityType(state);
-  if (!isSaved) {
-    return Promise.resolve();
-  }
-  if (!isLoggedIn) {
+  if (!isSaved || !isLoggedIn) {
     return Promise.resolve();
   }
   const entityName = intl.formatMessage({
     id: Entities[currentEntityType].name,
   });
-  return syncDeleteEntities(deleted)
+  let promise;
+  if (currentEntityType === Entities.sector.key) {
+    promise = deleteSector(getCurrentEntityId(state));
+  } else {
+    promise = syncDeleteEntities(deleted);
+  }
+  return promise
     .then(() => ({
       action: SuccessToast({
         title: intl.formatMessage(
@@ -364,4 +366,88 @@ export const saveEntities = (
         mapping: {},
       };
     });
+};
+
+export const translateEntities = (entities, customTags, intl) =>
+  mapValues(entities, (entityTypes, entityType) =>
+    mapValues(entityTypes, entity => {
+      let translatedAttributes = mapValues(
+        omit(entity.attributes, 'tags'),
+        (value, key) => {
+          const attribute = find(Entities[entityType].attributes, {
+            key,
+          });
+          if (!attribute || !attribute.attributes[value]) {
+            return null;
+          }
+          return intl.formatMessage({
+            id: attribute.attributes[value].name,
+          });
+        },
+      );
+
+      if (((entity.attributes || {}).tags || []).length) {
+        translatedAttributes = {
+          ...translatedAttributes,
+          description: entity.attributes.description,
+          tags: entity.attributes.tags
+            .map(tag => {
+              if (customTags[tag]) {
+                return customTags[tag];
+              }
+              const { key, name, ...lists } =
+                (Entities[entityType].tags || {})[tag] || {};
+              if (!key) {
+                return null;
+              }
+              const baseId = `tags.${key}`;
+              return {
+                name: intl.formatMessage({ id: baseId }),
+                description: intl.formatMessage({
+                  id: `${baseId}.description`,
+                }),
+                ...reduce(
+                  lists,
+                  (obj, listLength, listKey) => ({
+                    ...obj,
+                    [listKey]: [...Array(listLength).keys()].map(index =>
+                      intl.formatMessage({
+                        id: `${baseId}.${listKey}.${index}`,
+                      }),
+                    ),
+                  }),
+                  {},
+                ),
+              };
+            })
+            .filter(tag => tag),
+        };
+      }
+
+      return {
+        ...entity,
+        attributes: translatedAttributes,
+      };
+    }),
+  );
+
+export const getTopLevelEntity = (topLevelEntities, key) => {
+  const entityId = findKey(
+    topLevelEntities,
+    ({ x, y }) => coordinateKey(x, y) === key,
+  );
+  const entity = topLevelEntities[entityId];
+  return { entity, entityId, entityType: (entity || {}).type };
+};
+
+export const findTopLevelEntity = (entities, entity) => {
+  let traversable = entity;
+  let bailout = 20;
+
+  while (traversable.parentEntity !== Entities.sector.key && bailout > 0) {
+    traversable = entities[traversable.parentEntity][traversable.parent];
+    bailout -= 1;
+  }
+
+  return bailout ? traversable : undefined;
 };

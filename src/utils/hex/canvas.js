@@ -5,6 +5,7 @@ import { getTopLevelEntity } from 'utils/entity';
 import { distanceBetween } from 'utils/canvas-helpers';
 import Entities from 'constants/entities';
 import { getHexPoints } from 'utils/hex/common';
+import { isValidColor } from 'utils/common';
 import { TARGET_COLOR_WIDTH } from 'constants/defaults';
 
 const NAVIGATION_WIDTHS = {
@@ -13,10 +14,21 @@ const NAVIGATION_WIDTHS = {
   wide: 5,
 };
 
+const COLORS = {
+  DARK4: '#091833',
+  DARK3: '#11203b',
+  DARK2: '#182742',
+  DARK1: '#3c4b66',
+  LIGHT: '#dbdbdb',
+  PRIMARY: '#863c4e',
+  PRIMARY_ALT: '#792f41',
+  TRANSPARENT: 'transparent',
+};
+
 const ARROW_SIZE = 10;
 const drawArrowhead = (ctx, radians, x, y, ratio, isForward) => {
   const size = ARROW_SIZE * ratio;
-  ctx.fillStyle = '#dbdbdb';
+  ctx.fillStyle = COLORS.LIGHT;
   ctx.lineWidth = 2;
   ctx.save();
   ctx.beginPath();
@@ -28,15 +40,6 @@ const drawArrowhead = (ctx, radians, x, y, ratio, isForward) => {
   ctx.closePath();
   ctx.restore();
   ctx.fill();
-};
-
-const COLORS = {
-  DARK4: '#091833',
-  DARK3: '#11203b',
-  DARK2: '#182742',
-  DARK1: '#3c4b66',
-  PRIMARY: '#863c4e',
-  PRIMARY_ALT: '#792f41',
 };
 
 export default ({
@@ -55,14 +58,17 @@ export default ({
   routeLocator,
   paintRegion,
   layerHexes,
+  showNumberOfChildren,
+  showEntityName,
+  showCoordinates,
 }) => {
-  ctx.fillStyle = '#11203b';
+  ctx.fillStyle = COLORS.DARK3;
   ctx.rect(0, 0, width * ratio, height * ratio);
   ctx.fill();
 
   const step = 2 * ratio;
   ctx.strokeStyle = COLORS.DARK3;
-  ctx.lineWidth = 2 * ratio;
+  ctx.lineWidth = 3 * ratio;
 
   const hexEntities = hexes
     .map(hex => ({
@@ -97,6 +103,7 @@ export default ({
       rest.forEach(({ x, y }) => {
         ctx.lineTo(x, y);
       });
+      ctx.closePath();
       ctx.fillStyle = COLORS.DARK4;
       if (highlighted) {
         ctx.fillStyle = COLORS.DARK2;
@@ -106,6 +113,9 @@ export default ({
       }
       if (activeKey === hexKey) {
         ctx.fillStyle = COLORS.PRIMARY_ALT;
+        ctx.strokeStyle = COLORS.LIGHT;
+      } else {
+        ctx.strokeStyle = COLORS.TRANSPARENT;
       }
       if (holdKey === hexKey || (hoverKey === hexKey && holdKey)) {
         ctx.fillStyle = COLORS.DARK1;
@@ -133,7 +143,14 @@ export default ({
 
         if (hexLayer.length === 1) {
           const [fillStyle] = hexLayer;
-          ctx.fillStyle = fillStyle;
+          if (isValidColor(fillStyle)) {
+            ctx.fillStyle = fillStyle;
+          } else {
+            console.warn(
+              `WARNING: Invalid color "${fillStyle}". Replacing with black.`,
+            );
+            ctx.fillStyle = 'black';
+          }
         } else if (hexLayer.length > 1) {
           const gradient = ctx.createLinearGradient(
             points[1].x,
@@ -148,7 +165,13 @@ export default ({
           numSteps = numSteps < hexLayer.length ? hexLayer.length : numSteps;
           const gStep = 1 / numSteps;
           for (let i = 0; i < numSteps; i += 1) {
-            const color = hexLayer[i % hexLayer.length];
+            let color = hexLayer[i % hexLayer.length];
+            if (!isValidColor(color)) {
+              console.warn(
+                `WARNING: Invalid color "${color}". Replacing with black.`,
+              );
+              color = 'black';
+            }
             gradient.addColorStop(gStep * i, color);
             const nextColor = hexLayer[(i + 1) % hexLayer.length];
             if (nextColor) {
@@ -237,7 +260,7 @@ export default ({
 
     // Draw Path
     ctx.lineWidth = 2 * ratio;
-    ctx.strokeStyle = '#dbdbdb';
+    ctx.strokeStyle = COLORS.LIGHT;
     ctx.setLineDash([1, 0]);
     ctx.beginPath();
     ctx.moveTo(xStart, yStart);
@@ -253,35 +276,47 @@ export default ({
     }
   }
 
-  hexEntities.filter(hex => hex.highlighted).forEach(hex => {
-    // Draw Text
-    ctx.font = `${9 * ratio}px Titillium Web,sans-serif`;
-    ctx.fillStyle = includes(hexesWithDarkText, hex.hexKey)
-      ? '#000000'
-      : '#b2b2b2';
-    const renderText =
-      hex.width > 45 * ratio &&
-      (sectorLayers.systemText === undefined || sectorLayers.systemText);
-    if (renderText) {
-      ctx.fillText(
-        hex.hexKey,
-        hex.xOffset - step * 5,
-        hex.yOffset + hex.height / 2 - step * 2,
-      );
-    }
-    if (hex.entity) {
-      if (renderText) {
+  hexEntities
+    .filter(hex => hex.highlighted)
+    .forEach(hex => {
+      // Draw Text
+      ctx.font = `${9 * ratio}px Titillium Web,sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.fillStyle = includes(hexesWithDarkText, hex.hexKey)
+        ? '#000000'
+        : '#b2b2b2';
+      const renderText =
+        hex.width > 45 * ratio &&
+        (sectorLayers.systemText === undefined || sectorLayers.systemText);
+      if (renderText && showCoordinates) {
         ctx.fillText(
-          hex.entity.numChildren,
-          hex.xOffset - step,
-          hex.yOffset - hex.height / 2 + step * 4,
+          hex.hexKey,
+          hex.xOffset,
+          hex.yOffset + hex.height / 2 - step * 2,
         );
       }
-      ctx.fillStyle =
-        hex.entityType === Entities.blackHole.key ? '#000000' : '#dbdbdb';
-      ctx.beginPath();
-      ctx.arc(hex.xOffset, hex.yOffset, hex.width / 13, 0, 2 * Math.PI);
-      ctx.fill();
-    }
-  });
+      if (hex.entity) {
+        if (renderText) {
+          if (showEntityName) {
+            ctx.fillText(
+              hex.entity.name,
+              hex.xOffset,
+              hex.yOffset + hex.height / 2 - step * 7,
+            );
+          }
+          if (showNumberOfChildren) {
+            ctx.fillText(
+              hex.entity.numChildren,
+              hex.xOffset,
+              hex.yOffset - hex.height / 2 + step * 4,
+            );
+          }
+        }
+        ctx.fillStyle =
+          hex.entityType === Entities.blackHole.key ? '#000000' : '#dbdbdb';
+        ctx.beginPath();
+        ctx.arc(hex.xOffset, hex.yOffset, hex.width / 13, 0, 2 * Math.PI);
+        ctx.fill();
+      }
+    });
 };

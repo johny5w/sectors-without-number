@@ -1,6 +1,7 @@
 import React from 'react';
 import Chance from 'chance';
 import PropTypes from 'prop-types';
+import { RefreshCw } from 'react-feather';
 import { FormattedMessage, intlShape } from 'react-intl';
 
 import SidebarContainer from 'primitives/container/sidebar-container';
@@ -8,14 +9,16 @@ import SectionHeader from 'primitives/text/section-header';
 import LabeledInput from 'primitives/form/labeled-input';
 import SaveFooter from 'primitives/other/save-footer';
 import ItemRow from 'primitives/other/item-row';
+import Input from 'primitives/form/input';
 
-import { RefreshCw } from 'constants/icons';
-import { omit, sortBy, map, dropRight, clamp } from 'constants/lodash';
+import { omit, sortBy, map, dropRight, clamp, filter } from 'constants/lodash';
 import { FACTION_GOALS, FACTION_TAGS } from 'constants/faction';
 import { LAYER_NAME_LENGTH } from 'constants/defaults';
+import { factionColor } from 'utils/faction';
+import Entities from 'constants/entities';
 
 import FactionAssetForm from './faction-asset-form';
-import './style.scss';
+import styles from './styles.module.scss';
 
 const chance = new Chance();
 
@@ -30,8 +33,9 @@ export default function FactionForm({
   submitForm,
   toRoute,
   location,
-  homeworlds,
+  currentEntities,
   hitPoints,
+  currentFaction,
 }) {
   const relationshipOptions = [
     {
@@ -47,14 +51,6 @@ export default function FactionForm({
       label: intl.formatMessage({ id: 'faction.relationship.hostile' }),
     },
   ];
-
-  const homeworldOptions = sortBy(
-    map(homeworlds, ({ name }, value) => ({
-      value,
-      label: name,
-    })),
-    'label',
-  );
 
   const goalOptions = sortBy(
     map(FACTION_GOALS, value => ({
@@ -74,7 +70,9 @@ export default function FactionForm({
 
   return (
     <SidebarContainer
-      title={isCreating ? 'New Faction' : form.name}
+      title={
+        isCreating ? intl.formatMessage({ id: 'misc.newFaction' }) : form.name
+      }
       footer={
         <SaveFooter
           onCancel={() =>
@@ -87,10 +85,11 @@ export default function FactionForm({
     >
       <div>
         <SectionHeader header="misc.attributes" />
-        <div className="FactionForm">
+        <div className={styles.container}>
           <LabeledInput
             isRequired
             label="misc.name"
+            maxLength={LAYER_NAME_LENGTH}
             error={form.name.length > LAYER_NAME_LENGTH}
             placeholder={intl.formatMessage(
               { id: 'misc.nameLimit' },
@@ -98,6 +97,11 @@ export default function FactionForm({
             )}
             value={form.name}
             onChange={({ target }) => updateFaction({ name: target.value })}
+          />
+          <LabeledInput
+            label="misc.image"
+            value={form.image}
+            onChange={({ target }) => updateFaction({ image: target.value })}
           />
           <ItemRow>
             <LabeledInput
@@ -180,6 +184,46 @@ export default function FactionForm({
               }}
             />
           </ItemRow>
+          <ItemRow align="flexEnd">
+            <LabeledInput
+              isVertical
+              type="dropdown"
+              label="misc.homeworld"
+              clearable={false}
+              value={form.homeworldEntity || Entities.planet.key}
+              options={filter(
+                Entities,
+                ({ key, extraneous }) =>
+                  !extraneous && key !== Entities.sector.key,
+              ).map(attr => ({
+                value: attr.key,
+                label: intl.formatMessage({ id: attr.name }),
+              }))}
+              onChange={option =>
+                updateFaction({
+                  homeworldEntity: (option || {}).value,
+                  homeworld: undefined,
+                })
+              }
+            />
+            <Input
+              dropUp
+              isVertical
+              type="dropdown"
+              value={form.homeworld}
+              className={styles.loneInput}
+              options={map(
+                currentEntities[form.homeworldEntity || Entities.planet.key],
+                (entity, value) => ({
+                  label: entity.name,
+                  value,
+                }),
+              )}
+              onChange={option =>
+                updateFaction({ homeworld: (option || {}).value })
+              }
+            />
+          </ItemRow>
           <LabeledInput
             label="misc.relationship"
             placeholder=""
@@ -193,20 +237,6 @@ export default function FactionForm({
             onItemClick={() =>
               updateFaction({
                 relationship: chance.pickone(relationshipOptions).value,
-              })
-            }
-          />
-          <LabeledInput
-            label="misc.homeworld"
-            placeholder=""
-            type="dropdown"
-            value={form.homeworld}
-            options={homeworldOptions}
-            onChange={item => updateFaction({ homeworld: (item || {}).value })}
-            icon={RefreshCw}
-            onItemClick={() =>
-              updateFaction({
-                homeworld: chance.pickone(homeworldOptions).value,
               })
             }
           />
@@ -236,6 +266,12 @@ export default function FactionForm({
             }
           />
           <LabeledInput
+            label="misc.factionColor"
+            type="color"
+            value={factionColor(form.color, currentFaction)}
+            onChange={color => updateFaction({ color })}
+          />
+          <LabeledInput
             label="misc.description"
             rows="5"
             type="textarea"
@@ -260,7 +296,7 @@ export default function FactionForm({
             }}
             key={key}
             intl={intl}
-            homeworlds={homeworldOptions}
+            currentEntities={currentEntities}
             onDelete={() => updateFaction({ assets: omit(form.assets, key) })}
             onUpdate={update => updateFactionAsset(key, update)}
             {...asset}
@@ -277,6 +313,26 @@ FactionForm.propTypes = {
   isValid: PropTypes.bool.isRequired,
   form: PropTypes.shape({
     name: PropTypes.string.isRequired,
+    image: PropTypes.string,
+    color: PropTypes.string,
+    force: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+    cunning: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
+      .isRequired,
+    wealth: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
+      .isRequired,
+    hitPoints: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
+      .isRequired,
+    balance: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
+      .isRequired,
+    experience: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
+      .isRequired,
+    relationship: PropTypes.string,
+    homeworld: PropTypes.string,
+    homeworldEntity: PropTypes.string,
+    goal: PropTypes.string,
+    tags: PropTypes.arrayOf(PropTypes.string).isRequired,
+    description: PropTypes.string.isRequired,
+    assets: PropTypes.shape().isRequired,
   }).isRequired,
   updateFaction: PropTypes.func.isRequired,
   updateFactionAsset: PropTypes.func.isRequired,
@@ -286,6 +342,7 @@ FactionForm.propTypes = {
   location: PropTypes.shape({
     pathname: PropTypes.string.isRequired,
   }).isRequired,
-  homeworlds: PropTypes.shape().isRequired,
+  currentEntities: PropTypes.shape().isRequired,
   hitPoints: PropTypes.number.isRequired,
+  currentFaction: PropTypes.string.isRequired,
 };

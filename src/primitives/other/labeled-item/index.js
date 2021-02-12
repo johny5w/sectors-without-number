@@ -6,12 +6,13 @@ import { FormattedMessage } from 'react-intl';
 import FlexContainer from 'primitives/container/flex-container';
 import Label from 'primitives/form/label';
 
-import './style.scss';
+import styles from './styles.module.scss';
 
 export default function LabeledItem({
   isVertical,
   isRequired,
   label,
+  labelWidth,
   children,
   className,
 }) {
@@ -23,15 +24,19 @@ export default function LabeledItem({
   return (
     <FlexContainer
       align="center"
-      className={classNames('LabeledItem', className, {
-        'LabeledItem--vertical': isVertical,
+      className={classNames(styles.container, className, {
+        [styles['container--vertical']]: isVertical,
       })}
     >
-      <Label noPadding className="LabeledItem-Label">
+      <Label
+        noPadding
+        style={{ minWidth: isVertical ? 'auto' : labelWidth }}
+        className={styles.label}
+      >
         {labelItem}
         {requiredFlag}
       </Label>
-      <FlexContainer className="LabeledItem-Item">{children}</FlexContainer>
+      <FlexContainer className={styles.item}>{children}</FlexContainer>
     </FlexContainer>
   );
 }
@@ -40,6 +45,7 @@ LabeledItem.propTypes = {
   isVertical: PropTypes.bool,
   isRequired: PropTypes.bool,
   label: PropTypes.node.isRequired,
+  labelWidth: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   children: PropTypes.node.isRequired,
   className: PropTypes.string,
 };
@@ -47,5 +53,6 @@ LabeledItem.propTypes = {
 LabeledItem.defaultProps = {
   isVertical: false,
   isRequired: false,
+  labelWidth: '7rem',
   className: undefined,
 };

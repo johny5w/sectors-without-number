@@ -3,11 +3,12 @@ import { injectIntl } from 'react-intl';
 import { createStructuredSelector } from 'reselect';
 
 import {
+  customTagSelector,
   exportTypeSelector,
   isExportOpenSelector,
 } from 'store/selectors/base.selectors';
 import {
-  getCurrentEntities,
+  getExportEntities,
   getCurrentSector,
 } from 'store/selectors/entity.selectors';
 import {
@@ -21,13 +22,13 @@ import ExportModal from './export-modal';
 const mapStateToProps = createStructuredSelector({
   exportType: exportTypeSelector,
   isExportOpen: isExportOpenSelector,
+  customTags: customTagSelector,
   sector: getCurrentSector,
-  entities: getCurrentEntities,
+  entities: getExportEntities,
 });
 
 export default injectIntl(
-  connect(
-    mapStateToProps,
-    { setEntityExport, closeExport, startPrint },
-  )(ExportModal),
+  connect(mapStateToProps, { setEntityExport, closeExport, startPrint })(
+    ExportModal,
+  ),
 );

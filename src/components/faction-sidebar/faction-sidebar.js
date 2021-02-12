@@ -8,28 +8,18 @@ import ConfirmModal from 'primitives/modal/confirm-modal';
 
 import FactionAssets from './faction-assets';
 import FactionAttributes from './faction-attributes';
-import './style.scss';
+import styles from './styles.module.scss';
 
 export default class FactionSidebar extends Component {
-  static propTypes = {
-    intl: intlShape.isRequired,
-    faction: PropTypes.shape({
-      name: PropTypes.string.isRequired,
-    }),
-    currentSector: PropTypes.string.isRequired,
-    currentFaction: PropTypes.string.isRequired,
-    removeFaction: PropTypes.func.isRequired,
-  };
+  constructor(props) {
+    super(props);
 
-  static defaultProps = {
-    faction: undefined,
-  };
-
-  state = {
-    isConfirmDeleteOpen: false,
-    isAttributesOpen: true,
-    isAssetsOpen: true,
-  };
+    this.state = {
+      isConfirmDeleteOpen: false,
+      isAttributesOpen: true,
+      isAssetsOpen: true,
+    };
+  }
 
   render() {
     const {
@@ -65,6 +55,13 @@ export default class FactionSidebar extends Component {
         ]}
       >
         <div>
+          {!!faction.image && (
+            <img
+              src={faction.image}
+              className={styles.image}
+              alt={faction.name}
+            />
+          )}
           <SectionHeader
             isOpen={isAttributesOpen}
             onIconClick={() =>
@@ -73,17 +70,14 @@ export default class FactionSidebar extends Component {
             header="misc.attributes"
           />
           {isAttributesOpen && (
-            <FactionAttributes
-              className="FactionSidebar-Content"
-              faction={faction}
-            />
+            <FactionAttributes className={styles.content} faction={faction} />
           )}
           <SectionHeader
             isOpen={isAssetsOpen}
             onIconClick={() => this.setState({ isAssetsOpen: !isAssetsOpen })}
             header="misc.assets"
           />
-          {isAssetsOpen && <FactionAssets className="FactionSidebar-Content" />}
+          {isAssetsOpen && <FactionAssets className={styles.content} />}
         </div>
         <ConfirmModal
           isOpen={isConfirmDeleteOpen}
@@ -101,3 +95,18 @@ export default class FactionSidebar extends Component {
     );
   }
 }
+
+FactionSidebar.propTypes = {
+  intl: intlShape.isRequired,
+  faction: PropTypes.shape({
+    name: PropTypes.string.isRequired,
+    image: PropTypes.string,
+  }),
+  currentSector: PropTypes.string.isRequired,
+  currentFaction: PropTypes.string.isRequired,
+  removeFaction: PropTypes.func.isRequired,
+};
+
+FactionSidebar.defaultProps = {
+  faction: undefined,
+};

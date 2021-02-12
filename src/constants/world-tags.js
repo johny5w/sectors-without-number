@@ -353,7 +353,7 @@ export default {
   [worldTagKeys.goldRush]: {
     key: worldTagKeys.goldRush,
     enemies: 3,
-    friends: 4,
+    friends: 3,
     complications: 3,
     things: 3,
     places: 4,
@@ -840,7 +840,7 @@ export default {
   },
   [worldTagKeys.tyranny]: {
     key: worldTagKeys.tyranny,
-    enemies: 5,
+    enemies: 4,
     friends: 4,
     complications: 3,
     things: 3,

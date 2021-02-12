@@ -1,14 +1,14 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import ReactHintFactory from 'react-hint';
 import { intlShape } from 'react-intl';
+import { EyeOff } from 'react-feather';
+import ReactHintFactory from 'react-hint';
 
 import FlexContainer from 'primitives/container/flex-container';
 import SectionHeader from 'primitives/text/section-header';
 import LinkIcon from 'primitives/other/link-icon';
 import Dice from 'primitives/icons/dice';
 
-import { EyeOff } from 'constants/icons';
 import { sortByKey, coordinateKey, toCommaArray } from 'utils/common';
 import { map, size, isNumber } from 'constants/lodash';
 import Entities from 'constants/entities';
@@ -30,6 +30,7 @@ const EntityList = ({
   toggleListOpen,
   intl,
   isShared,
+  customTags,
 }) => {
   const numEntities = size(entities);
   if (!numEntities && !isSidebarEditActive) {
@@ -126,7 +127,12 @@ const EntityList = ({
         additional = coordinateKey(entity.x, entity.y);
       } else if (!isShared) {
         additional = ((entity.attributes || {}).tags || [])
-          .map(tag => intl.formatMessage({ id: `tags.${tag}` }))
+          .map(tag =>
+            intl.formatMessage({
+              id: `tags.${tag}`,
+              defaultMessage: (customTags[tag] || {}).name,
+            }),
+          )
           .map(toCommaArray)
           .join('');
       }
@@ -162,6 +168,7 @@ EntityList.propTypes = {
   toggleListOpen: PropTypes.func.isRequired,
   intl: intlShape.isRequired,
   isShared: PropTypes.bool.isRequired,
+  customTags: PropTypes.shape().isRequired,
 };
 
 EntityList.defaultProps = {

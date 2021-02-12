@@ -30,6 +30,9 @@ import {
   currentEntityTypeSelector,
   routeLocatorSelector,
   layerRegionPaintSelector,
+  settingsShowNumberOfChildren,
+  settingsShowEntityName,
+  settingsShowCoordinates,
 } from 'store/selectors/base.selectors';
 import {
   getCurrentTopLevelEntities,
@@ -59,6 +62,9 @@ const mapStateToProps = createStructuredSelector({
   paintRegion: currentPaintRegion,
   paintRegionId: layerRegionPaintSelector,
   layerHexes: visibleLayerHexColors,
+  showNumberOfChildren: settingsShowNumberOfChildren,
+  showEntityName: settingsShowEntityName,
+  showCoordinates: settingsShowCoordinates,
 });
 
 const mapDispatchToProps = (dispatch, props) => ({
@@ -74,9 +80,7 @@ const mapDispatchToProps = (dispatch, props) => ({
   updateNavSettings: (key, value) => dispatch(updateNavSettings(key, value)),
   toggleRegionAtHex: hexKey => dispatch(toggleRegionAtHex(hexKey)),
   toEntity: (entityType, entityId) => {
-    const route = `/sector/${
-      props.match.params.sector
-    }/${entityType}/${entityId}`;
+    const route = `/sector/${props.match.params.sector}/${entityType}/${entityId}`;
     if (props.location.pathname !== route) {
       dispatch(push(route));
     }
@@ -84,10 +88,5 @@ const mapDispatchToProps = (dispatch, props) => ({
 });
 
 export default injectIntl(
-  withRouter(
-    connect(
-      mapStateToProps,
-      mapDispatchToProps,
-    )(HexMap),
-  ),
+  withRouter(connect(mapStateToProps, mapDispatchToProps)(HexMap)),
 );

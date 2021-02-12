@@ -15,6 +15,7 @@ export default function LayerForm({ intl, layerForm, updateLayer }) {
         isVertical
         isRequired
         label="misc.layerName"
+        maxLength={LAYER_NAME_LENGTH}
         error={layerForm.name.length > LAYER_NAME_LENGTH}
         placeholder={intl.formatMessage(
           { id: 'misc.nameLimit' },
@@ -35,7 +36,7 @@ export default function LayerForm({ intl, layerForm, updateLayer }) {
       <LabeledInput
         type="checkbox"
         label="misc.isHidden"
-        value={layerForm.isHidden}
+        checked={layerForm.isHidden}
         onChange={({ target }) => updateLayer('isHidden', target.checked)}
       />
     </FlexContainer>

@@ -2,6 +2,7 @@ const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 const _ = require('lodash');
 
+const BATCH_SIZE = 250;
 const SECTOR_LIMIT = 10;
 const ENTITY_TYPES = [
   'asteroidBase',
@@ -45,7 +46,14 @@ module.exports = functions.https.onCall((data, context) => {
     .where('creator', '==', context.auth.uid)
     .get()
     .then(snapshot => {
-      if (snapshot.size >= SECTOR_LIMIT) {
+      let activeSectorCount = 0;
+      snapshot.forEach(doc => {
+        const sectorData = doc.data();
+        if (!sectorData.deleted) {
+          activeSectorCount += 1;
+        }
+      });
+      if (activeSectorCount >= SECTOR_LIMIT) {
         throw new functions.https.HttpsError(
           'permission-denied',
           'You have reached your limit on total number of sectors.',
@@ -72,11 +80,12 @@ module.exports = functions.https.onCall((data, context) => {
               }
 
               const timestamp = admin.firestore.FieldValue.serverTimestamp();
-              const savableEntity = Object.assign({}, entity, {
+              const savableEntity = {
+                ...entity,
                 creator: context.auth.uid,
                 created: timestamp,
                 updated: timestamp,
-              });
+              };
               if (newParentId) {
                 savableEntity.parent = newParentId;
                 savableEntity.sector = thisSectorId;
@@ -89,7 +98,7 @@ module.exports = functions.https.onCall((data, context) => {
                 .doc();
               batches[batchIndex].set(newRef, savableEntity);
               batchCount += 1;
-              if (batchCount === 500) {
+              if (batchCount === BATCH_SIZE) {
                 batches.push(admin.firestore().batch());
                 batchIndex += 1;
                 batchCount = 0;
@@ -106,11 +115,7 @@ module.exports = functions.https.onCall((data, context) => {
 
       saveEntityTree();
 
-      return Promise.all(
-        batches
-          .filter(batch => batch._writes.length) // eslint-disable-line no-underscore-dangle
-          .map(batch => batch.commit())
-      ).then(() => ({
+      return Promise.all(batches.map(batch => batch.commit())).then(() => ({
         mapping,
       }));
     })

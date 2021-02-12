@@ -4,10 +4,9 @@ import classNames from 'classnames';
 import { Link } from 'react-router-dom';
 import ReactHintFactory from 'react-hint';
 import { FormattedMessage, intlShape } from 'react-intl';
-
-import { sortBy, map, includes, keys } from 'constants/lodash';
 import {
   List,
+  Settings,
   Plus,
   Lock,
   Unlock,
@@ -16,7 +15,9 @@ import {
   Edit2,
   Eye,
   EyeOff,
-} from 'constants/icons';
+} from 'react-feather';
+
+import { sortBy, map, includes, keys } from 'constants/lodash';
 import FlexContainer from 'primitives/container/flex-container';
 
 import './style.scss';
@@ -24,25 +25,6 @@ import './style.scss';
 const ReactHint = ReactHintFactory(React);
 
 export default class FloatingToolbar extends Component {
-  static propTypes = {
-    sectorId: PropTypes.string.isRequired,
-    mapLocked: PropTypes.bool.isRequired,
-    toggleMapLock: PropTypes.func.isRequired,
-    playerView: PropTypes.bool.isRequired,
-    togglePlayerView: PropTypes.func.isRequired,
-    layers: PropTypes.shape().isRequired,
-    sectorLayers: PropTypes.shape().isRequired,
-    toggleLayer: PropTypes.func.isRequired,
-    isSharedSector: PropTypes.bool.isRequired,
-    isShared: PropTypes.bool.isRequired,
-    isSaved: PropTypes.bool.isRequired,
-    redirectToHome: PropTypes.func.isRequired,
-    intl: intlShape.isRequired,
-    location: PropTypes.shape({
-      pathname: PropTypes.string.isRequired,
-    }).isRequired,
-  };
-
   constructor(props) {
     super(props);
 
@@ -115,7 +97,13 @@ export default class FloatingToolbar extends Component {
   renderLayer(key, text, editLink) {
     let actionButton = null;
     const { isShared, isSaved, layers, toggleLayer, sectorLayers } = this.props;
-    if (!isShared && isSaved && editLink) {
+    if (key === 'systemText') {
+      actionButton = (
+        <Link to={editLink} className="FloatingToolbar-ItemAction">
+          <Settings size={18} />
+        </Link>
+      );
+    } else if (!isShared && isSaved && editLink) {
       actionButton = (
         <Link to={editLink} className="FloatingToolbar-ItemAction">
           <Edit2 size={18} />
@@ -163,7 +151,7 @@ export default class FloatingToolbar extends Component {
   }
 
   render() {
-    const { intl, sectorId, layers } = this.props;
+    const { isShared, intl, sectorId, layers } = this.props;
     return (
       <div className="FloatingToolbar-Container">
         <FlexContainer className="FloatingToolbar" direction="column">
@@ -177,13 +165,20 @@ export default class FloatingToolbar extends Component {
             >
               {this.renderLayer(
                 'systemText',
-                intl.formatMessage({ id: 'misc.hexSystemText' }),
+                intl.formatMessage({ id: 'misc.hexText' }),
+                `/sector/${sectorId}/settings`,
               )}
               {this.renderLayer(
                 'navigation',
                 intl.formatMessage({ id: 'misc.navRoutes' }),
                 `/sector/${sectorId}/navigation`,
               )}
+              {!isShared &&
+                this.renderLayer(
+                  'factions',
+                  intl.formatMessage({ id: 'misc.factions' }),
+                  `/elements/${sectorId}/faction`,
+                )}
               {sortBy(
                 map(layers, (layer, key) => ({
                   ...layer,
@@ -246,3 +241,22 @@ export default class FloatingToolbar extends Component {
     );
   }
 }
+
+FloatingToolbar.propTypes = {
+  sectorId: PropTypes.string.isRequired,
+  mapLocked: PropTypes.bool.isRequired,
+  toggleMapLock: PropTypes.func.isRequired,
+  playerView: PropTypes.bool.isRequired,
+  togglePlayerView: PropTypes.func.isRequired,
+  layers: PropTypes.shape().isRequired,
+  sectorLayers: PropTypes.shape().isRequired,
+  toggleLayer: PropTypes.func.isRequired,
+  isSharedSector: PropTypes.bool.isRequired,
+  isShared: PropTypes.bool.isRequired,
+  isSaved: PropTypes.bool.isRequired,
+  redirectToHome: PropTypes.func.isRequired,
+  intl: intlShape.isRequired,
+  location: PropTypes.shape({
+    pathname: PropTypes.string.isRequired,
+  }).isRequired,
+};

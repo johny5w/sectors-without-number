@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
-import ReactHintFactory from 'react-hint';
 import PropTypes from 'prop-types';
+import ReactHintFactory from 'react-hint';
+import { X, EyeOff, Crosshair } from 'react-feather';
 import { intlShape, FormattedMessage } from 'react-intl';
 
 import Modal from 'primitives/modal/modal';
@@ -8,7 +9,7 @@ import ConfirmModal from 'primitives/modal/confirm-modal';
 import Header, { HeaderType } from 'primitives/text/header';
 import FlexContainer from 'primitives/container/flex-container';
 import SectionHeader from 'primitives/text/section-header';
-import ColorPicker from 'primitives/other/color-picker';
+import ColorPicker from 'primitives/form/color-picker';
 import LinkIcon from 'primitives/other/link-icon';
 import Button from 'primitives/other/button';
 import Label from 'primitives/form/label';
@@ -17,7 +18,6 @@ import LabeledInput from 'primitives/form/labeled-input';
 import ItemRow from 'primitives/other/item-row';
 
 import { size, map } from 'constants/lodash';
-import { X, EyeOff, Crosshair } from 'constants/icons';
 import { sortByKey } from 'utils/common';
 
 import './style.scss';
@@ -25,24 +25,6 @@ import './style.scss';
 const ReactHint = ReactHintFactory(React);
 
 export default class NavigationSidebar extends Component {
-  static propTypes = {
-    settings: PropTypes.shape({
-      color: PropTypes.string.isRequired,
-      type: PropTypes.string.isRequired,
-      width: PropTypes.string.isRequired,
-      isCreatingRoute: PropTypes.bool.isRequired,
-    }).isRequired,
-    routes: PropTypes.shape().isRequired,
-    resetNavSettings: PropTypes.func.isRequired,
-    cancelNavigation: PropTypes.func.isRequired,
-    updateNavSettings: PropTypes.func.isRequired,
-    completeRoute: PropTypes.func.isRequired,
-    removeRoute: PropTypes.func.isRequired,
-    toggleVisibility: PropTypes.func.isRequired,
-    locateRoute: PropTypes.func.isRequired,
-    intl: intlShape.isRequired,
-  };
-
   constructor(props) {
     super(props);
 
@@ -327,3 +309,21 @@ export default class NavigationSidebar extends Component {
     );
   }
 }
+
+NavigationSidebar.propTypes = {
+  settings: PropTypes.shape({
+    color: PropTypes.string.isRequired,
+    type: PropTypes.string.isRequired,
+    width: PropTypes.string.isRequired,
+    isCreatingRoute: PropTypes.bool.isRequired,
+  }).isRequired,
+  routes: PropTypes.shape().isRequired,
+  resetNavSettings: PropTypes.func.isRequired,
+  cancelNavigation: PropTypes.func.isRequired,
+  updateNavSettings: PropTypes.func.isRequired,
+  completeRoute: PropTypes.func.isRequired,
+  removeRoute: PropTypes.func.isRequired,
+  toggleVisibility: PropTypes.func.isRequired,
+  locateRoute: PropTypes.func.isRequired,
+  intl: intlShape.isRequired,
+};

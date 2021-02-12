@@ -10,6 +10,7 @@ import './style.scss';
 
 export default function LabeledInput({
   label,
+  labelWidth,
   type,
   icon,
   checkboxes,
@@ -23,7 +24,8 @@ export default function LabeledInput({
     <LabeledItem
       className={className}
       label={label}
-      isVertical={isVertical || type === 'textarea'}
+      labelWidth={labelWidth}
+      isVertical={isVertical || type === 'textarea' || type === 'color'}
       isRequired={isRequired}
     >
       <InputComponent type={type} icon={icon} {...rest} />
@@ -41,6 +43,7 @@ export default function LabeledInput({
 
 LabeledInput.propTypes = {
   label: PropTypes.node.isRequired,
+  labelWidth: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   type: PropTypes.string,
   icon: PropTypes.func,
   checkboxes: PropTypes.arrayOf(PropTypes.node),
@@ -50,6 +53,7 @@ LabeledInput.propTypes = {
 };
 
 LabeledInput.defaultProps = {
+  labelWidth: undefined,
   type: 'text',
   icon: undefined,
   checkboxes: [],

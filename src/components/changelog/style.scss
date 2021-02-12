@@ -31,3 +31,13 @@
 .Changelog-Version {
   margin-bottom: 0.5rem;
 }
+
+.Changelog-ContributorLink {
+  color: $light2;
+  margin-left: 0.4rem;
+  transition: color 0.2s linear;
+
+  &:hover {
+    color: $light3;
+  }
+}

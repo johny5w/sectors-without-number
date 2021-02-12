@@ -12,12 +12,11 @@ export default class StarField extends Component {
 
     this.ratio = getPixelRatio();
     this.canvas = React.createRef();
+    this.state = {
+      height: window.innerHeight,
+      width: window.innerWidth,
+    };
   }
-
-  state = {
-    height: window.innerHeight,
-    width: window.innerWidth,
-  };
 
   componentDidMount() {
     this.drawStars();
@@ -57,9 +56,12 @@ export default class StarField extends Component {
     const { width, height } = this.state;
     return (
       <Measure
-        onResize={({ entry }) =>
-          this.setState({ width: entry.width, height: entry.height })
-        }
+        onResize={({ entry }) => {
+          if (!entry) {
+            return;
+          }
+          this.setState({ width: entry.width, height: entry.height });
+        }}
       >
         {({ measureRef }) => (
           <AbsoluteContainer ref={measureRef} className="StarField-Container">

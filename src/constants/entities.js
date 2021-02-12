@@ -31,6 +31,18 @@ import RefuelingStationSituation from 'constants/refueling-station/situation';
 import ResearchBaseOccupation from 'constants/research-base/occupation';
 import ResearchBaseSituation from 'constants/research-base/situation';
 
+const emptyOccupation = {
+  name: 'misc.occupation',
+  key: 'occupation',
+  attributes: {},
+};
+
+const emptySituation = {
+  name: 'misc.situation',
+  key: 'situation',
+  attributes: {},
+};
+
 const buildEntity = entity => ({
   topLevel: false,
   nameGenerator: () => {},
@@ -41,12 +53,14 @@ const buildEntity = entity => ({
   ...entity,
 });
 
+// *********** Extraneous ***********
 const layer = {
   key: 'layer',
   name: 'entity.layer',
   shortName: 'entity.layer',
   sidebar: 'layer',
   action: 'layer',
+  extraneous: true,
 };
 
 const navigation = {
@@ -54,6 +68,7 @@ const navigation = {
   name: 'entity.navigation',
   shortName: 'entity.navigation',
   sidebar: 'navigation',
+  extraneous: true,
 };
 
 const note = {
@@ -62,7 +77,17 @@ const note = {
   shortName: 'entity.note',
   sidebar: 'note',
   action: 'entity',
+  extraneous: true,
 };
+
+const settings = {
+  key: 'settings',
+  name: 'misc.settings',
+  shortName: 'misc.settings',
+  sidebar: 'settings',
+  extraneous: true,
+};
+// **********************************
 
 const researchBase = {
   key: 'researchBase',
@@ -140,6 +165,7 @@ const moon = {
   shortName: 'entity.moon',
   action: 'entity',
   nameGenerator: generateName,
+  attributes: [emptyOccupation, emptySituation],
   children: [
     moonBase.key,
     note.key,
@@ -201,6 +227,7 @@ const blackHole = {
   action: 'entity',
   topLevel: true,
   nameGenerator: generateBlackHoleName,
+  attributes: [emptyOccupation, emptySituation],
   children: [
     deepSpaceStation.key,
     note.key,
@@ -218,6 +245,7 @@ const system = {
   action: 'entity',
   topLevel: true,
   nameGenerator: generateName,
+  attributes: [emptyOccupation, emptySituation],
   children: [
     asteroidBelt.key,
     deepSpaceStation.key,
@@ -256,6 +284,7 @@ export default mapValues(
     sector,
     spaceStation,
     system,
+    settings,
   },
   buildEntity,
 );

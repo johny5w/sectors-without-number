@@ -18,6 +18,7 @@ import { values, size } from 'constants/lodash';
 import './style.scss';
 
 export default function OverviewTable({
+  customTags,
   entities,
   match,
   currentSector,
@@ -38,13 +39,32 @@ export default function OverviewTable({
           </Link>
         ),
       },
+      { accessor: 'location', Header: 'misc.location', centered: true },
+      {
+        accessor: 'tags',
+        Header: 'misc.tags',
+        Cell: tags =>
+          tags
+            .map(tag =>
+              intl.formatMessage({
+                id: `tags.${tag}`,
+                defaultMessage: (customTags[tag] || {}).name,
+              }),
+            )
+            .filter(tag => tag)
+            .join(', ') || '-',
+      },
     ];
+    const attributes = Entities[entityType].attributes.map(({ key, name }) => ({
+      accessor: key,
+      Header: name,
+    }));
     if (Entities[entityType].topLevel) {
       return [
         ...common,
-        { accessor: 'location', Header: 'misc.location', centered: true },
         { accessor: 'children', Header: 'misc.children', centered: true },
         { accessor: 'neighbors', Header: 'misc.neighbors' },
+        ...attributes,
       ];
     }
     const columns = [
@@ -66,21 +86,7 @@ export default function OverviewTable({
         centered: true,
       });
     }
-    if ((Entities[entityType].attributes || []).length) {
-      Entities[entityType].attributes.forEach(({ key, name }) => {
-        columns.push({ accessor: key, Header: name, translateItem: true });
-      });
-    }
-    if (Entities[entityType].tags) {
-      columns.push({
-        accessor: 'tags',
-        Header: 'misc.tags',
-        Cell: tags =>
-          tags
-            .map(tag => intl.formatMessage({ id: `tags.${tag}` }))
-            .join(', ') || '-',
-      });
-    }
+    attributes.map(attr => columns.push(attr));
     return columns;
   };
 
@@ -107,12 +113,25 @@ export default function OverviewTable({
       columns.map(col => intl.formatMessage({ id: col.Header })),
     ].concat(
       tableData.map(data =>
-        columns.map(
-          ({ accessor, translateItem }) =>
-            translateItem
-              ? intl.formatMessage({ id: data[accessor] })
-              : data[accessor],
-        ),
+        columns.map(({ accessor }) => {
+          if (!data[accessor]) {
+            return '';
+          }
+          return accessor === 'tags'
+            ? data[accessor]
+                .map(tag =>
+                  intl.formatMessage({
+                    id: `tags.${tag}`,
+                    defaultMessage: (customTags[tag] || {}).name,
+                  }),
+                )
+                .filter(tag => tag)
+                .join(', ')
+            : intl.formatMessage({
+                id: data[accessor],
+                defaultMessage: `${data[accessor]}` || '',
+              });
+        }),
       ),
     );
     return createCSVDownload(
@@ -155,6 +174,7 @@ export default function OverviewTable({
 }
 
 OverviewTable.propTypes = {
+  customTags: PropTypes.shape().isRequired,
   entities: PropTypes.shape().isRequired,
   currentSector: PropTypes.shape({
     name: PropTypes.string,

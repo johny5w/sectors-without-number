@@ -1,4 +1,222 @@
 {
+  "7.21.7": {
+    "description": "Fix bug preventing layer color picker from opening.",
+    "date": "7-8-2020"
+  },
+  "7.21.6": {
+    "description": "Fix bug preventing create layer sidebar from staying open.",
+    "date": "7-2-2020"
+  },
+  "7.21.5": {
+    "description": "Fix issue in layer details that caused the site to error when toggling player view on.",
+    "date": "6-29-2020"
+  },
+  "7.21.4": {
+    "description": "Upgrade function endpoints to Node 10.",
+    "date": "5-31-2020",
+    "changes": ["Patch a minor security alert on an included package."]
+  },
+  "7.21.3": {
+    "description": "Update French & Hebrew Translations.",
+    "date": "5-28-2020"
+  },
+  "7.21.2": {
+    "description": "Fix \"Getting Started\" instructions in the GitHub README.",
+    "contributor": "koslowdavida",
+    "date": "4-19-2020"
+  },
+  "7.21.1": {
+    "description": "Fix translations rendering as lookup keys.",
+    "date": "3-25-2020"
+  },
+  "7.21.0": {
+    "description": "Enhanced overview list header.",
+    "date": "3-17-2020",
+    "changes": [
+      "Overview list header now allows all entities to be exported as CSV at once.",
+      "Manage custom tags directly from the overview list header.",
+      "Outline selected hex in white so that it stands out against layer fill colors."
+    ]
+  },
+  "7.20.4": {
+    "description": "Fix bug where updated custom tags disappear.",
+    "date": "3-17-2020"
+  },
+  "7.20.3": {
+    "description": "Show descriptions within the JSON export.",
+    "date": "3-16-2020"
+  },
+  "7.20.2": {
+    "description": "Descriptions now break onto multiple lines.",
+    "date": "3-16-2020"
+  },
+  "7.20.1": {
+    "description": "Show custom tags within the JSON export.",
+    "date": "3-16-2020"
+  },
+  "7.20.0": {
+    "description": "Custom entity tags.",
+    "date": "3-15-2020"
+  },
+  "7.19.2": {
+    "description": "Fix incorrect hp for pretech infantry asset.",
+    "date": "2-12-2020"
+  },
+  "7.19.1": {
+    "description": "Take into account deleted sectors when comparing against sector limit.",
+    "date": "1-18-2020"
+  },
+  "7.19.0": {
+    "description": "Remove broken and unused Facebook login.",
+    "date": "1-12-2020"
+  },
+  "7.18.0": {
+    "description": "Soft-delete sectors to prevent accidental data loss.",
+    "date": "1-12-2020"
+  },
+  "7.17.2": {
+    "description": "Fix system export in the overview table.",
+    "date": "11-29-2019"
+  },
+  "7.17.1": {
+    "description": "Validate hexcodes before drawing them on the sector to prevent errors.",
+    "date": "10-23-2019"
+  },
+  "7.17.0": {
+    "description": "Faction and their assets can be located on any entity in your sector.",
+    "date": "10-19-2019"
+  },
+  "7.16.0": {
+    "description": "On mobile devices the sidebar will expand to the full width.",
+    "date": "10-4-2019"
+  },
+  "7.15.1": {
+    "description": "Ensure the faction layer is shown by default since it is default to visible.",
+    "date": "10-3-2019"
+  },
+  "7.15.0": {
+    "description": "Automatic Faction Layer",
+    "date": "10-3-2019",
+    "changes": [
+      "Factions now have an associated color used to paint the faction layer.",
+      "Color swatches are now added directly to the hover tooltip."
+    ]
+  },
+  "7.14.0": {
+    "description": "Add Occupation & Situation to Black Holes, Systems, and Moons.",
+    "date": "10-1-2019"
+  },
+  "7.13.2": {
+    "description": "Update translation data. Complete Hebrew.",
+    "date": "9-30-2019"
+  },
+  "7.13.1": {
+    "description": "Fix bug where overview and print would not work if a note was added on the main sector entity.",
+    "date": "8-24-2019",
+    "changes": ["Condensed printable tables span the full width of the page."]
+  },
+  "7.13.0": {
+    "description": "Add \"location\" to every entity in overview tables.",
+    "date": "8-11-2019"
+  },
+  "7.12.0": {
+    "description": "Translate entity attributes in JSON export.",
+    "date": "8-10-2019",
+    "changes": [
+      "Cut out unnecessary parts of the JSON export.",
+      "Ensure hidden items are filtered from players."
+    ]
+  },
+  "7.11.0": {
+    "description": "Add image option to faction entities.",
+    "date": "8-10-2019"
+  },
+  "7.10.0": {
+    "description": "Update JSON export messaging and add more hebrew translations.",
+    "date": "8-4-2019"
+  },
+  "7.9.0": {
+    "description": "Allow multiple selected layers at once.",
+    "date": "8-4-2019"
+  },
+  "7.8.3": {
+    "description": "Upgrade dependency to fix severe security vulnerability.",
+    "date": "7-11-2019"
+  },
+  "7.8.2": {
+    "description": "Upgrade backend dependencies to fix security vulnerabilities.",
+    "date": "6-27-2019"
+  },
+  "7.8.1": {
+    "description": "Share link directly to current entity instead of sector.",
+    "date": "6-27-2019"
+  },
+  "7.8.0": {
+    "description": "Upgrade Dependencies.",
+    "date": "6-25-2019",
+    "changes": [
+      "Upgrade build tools and front-end packages.",
+      "Fix a few english language typos.",
+      "Add a handful more Hebrew world tag translations."
+    ]
+  },
+  "7.7.2": {
+    "description": "Fix bug where player's could see hidden items in some cases by navigating home and then going back.",
+    "date": "5-21-2019"
+  },
+  "7.7.1": {
+    "description": "Fix minor security warning in the lodash dependency.",
+    "date": "3-10-2019"
+  },
+  "7.7.0": {
+    "description": "Add hex settings page and ability to show name of system/black hole within the hex.",
+    "contributor": "Irame",
+    "date": "3-10-2019"
+  },
+  "7.6.1": {
+    "description": "Fix bug where all hex data was removed from layer when a region was deleted.",
+    "date": "2-19-2019"
+  },
+  "7.6.0": {
+    "description": "When you go to edit any entity, you can add images to show your players.",
+    "date": "2-16-2019"
+  },
+  "7.5.8": {
+    "description": "Fix bug where layers couldn't be un-hidden.",
+    "date": "2-11-2019"
+  },
+  "7.5.7": {
+    "description": "Fix misspellings in english translation.",
+    "date": "1-28-2019"
+  },
+  "7.5.6": {
+    "description": "Updated German, English, French, and Hebrew translations.",
+    "date": "1-11-2019"
+  },
+  "7.5.5": {
+    "description": "Fix API error when syncing large sectors.",
+    "date": "12-31-2018",
+    "changes": [
+      "Add german translations for world tags.",
+      "Fix some spelling errors in the english translations."
+    ]
+  },
+  "7.5.4": {
+    "description": "Fix missing translations when using anything but english.",
+    "date": "12-26-2018"
+  },
+  "7.5.3": {
+    "description": "Upgrade firebase dependencies.",
+    "date": "12-12-2018"
+  },
+  "7.5.2": {
+    "description": "Fix row/column inputs being weird on configure page.",
+    "date": "12-1-2018"
+  },
+  "7.5.1": {
+    "description": "Fix overview table sorting when clicking on header text.",
+    "date": "11-8-2018"
+  },
   "7.5.0": {
     "description": "Allow expansion of existing sector in sidebar header.",
     "date": "11-7-2018"

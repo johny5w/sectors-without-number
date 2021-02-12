@@ -5,9 +5,10 @@ import { createStructuredSelector } from 'reselect';
 
 import {
   factionFormSelector,
+  currentEntitySelector,
   factionIsCreatingSelector,
 } from 'store/selectors/base.selectors';
-import { getCurrentPlanets } from 'store/selectors/entity.selectors';
+import { getCurrentEntities } from 'store/selectors/entity.selectors';
 import {
   currentFormHitPoints,
   isValidFactionForm,
@@ -22,10 +23,11 @@ import {
 import FactionForm from './faction-form';
 
 const mapStateToProps = createStructuredSelector({
+  currentFaction: currentEntitySelector,
   isCreating: factionIsCreatingSelector,
   isValid: isValidFactionForm,
   form: factionFormSelector,
-  homeworlds: getCurrentPlanets,
+  currentEntities: getCurrentEntities,
   hitPoints: currentFormHitPoints,
 });
 
@@ -39,8 +41,5 @@ const mapDispatchToProps = (dispatch, props) => ({
 });
 
 export default injectIntl(
-  connect(
-    mapStateToProps,
-    mapDispatchToProps,
-  )(FactionForm),
+  connect(mapStateToProps, mapDispatchToProps)(FactionForm),
 );
